@@ -38,9 +38,6 @@
 
 
 @implementation XLFormSelectorCell
-{
-    UIColor * _beforeChangeColor;
-}
 
 
 -(NSString *)valueDisplayText
@@ -101,16 +98,6 @@
     return [super inputView];
 }
 
--(BOOL)formDescriptorCellCanBecomeFirstResponder
-{
-    return ((!self.rowDescriptor.disabled) && ([self.rowDescriptor.rowType isEqualToString:XLFormRowDescriptorTypeSelectorPickerView]));
-}
-
--(BOOL)formDescriptorCellBecomeFirstResponder
-{
-    return  [self becomeFirstResponder];
-}
-
 - (BOOL)canBecomeFirstResponder
 {
     if ([self.rowDescriptor.rowType isEqualToString:XLFormRowDescriptorTypeSelectorPickerView]){
@@ -154,22 +141,31 @@
 
 -(void)formDescriptorCellDidSelectedWithFormController:(XLFormViewController *)controller
 {
+	
     if ([self.rowDescriptor.rowType isEqualToString:XLFormRowDescriptorTypeSelectorPush] || [self.rowDescriptor.rowType isEqualToString:XLFormRowDescriptorTypeSelectorPopover]){
-        UIViewController * controllerToPresent = nil;
-        if (self.rowDescriptor.action.formSegueIdenfifier){
-            [controller performSegueWithIdentifier:self.rowDescriptor.action.formSegueIdenfifier sender:self.rowDescriptor];
+        if (self.rowDescriptor.selectorOptions){
+            XLFormOptionsViewController * optionsViewController = [[XLFormOptionsViewController alloc] initWithOptions:self.rowDescriptor.selectorOptions style:UITableViewStyleGrouped titleHeaderSection:nil titleFooterSection:nil];
+            optionsViewController.rowDescriptor = self.rowDescriptor;
+            optionsViewController.title = self.rowDescriptor.selectorTitle;
+			
+			if ([self.rowDescriptor.rowType isEqualToString:XLFormRowDescriptorTypeSelectorPopover]) {
+				self.popoverController = [[UIPopoverController alloc] initWithContentViewController:optionsViewController];
+                self.popoverController.delegate = self;
+                optionsViewController.popoverController = self.popoverController;
+                if (self.detailTextLabel.window){
+                    [self.popoverController presentPopoverFromRect:CGRectMake(0, 0, self.detailTextLabel.frame.size.width, self.detailTextLabel.frame.size.height) inView:self.detailTextLabel permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+                }
+                else{
+                    [self.popoverController presentPopoverFromRect:CGRectMake(0, 0, self.frame.size.width, self.frame.size.height) inView:self permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+                }
+                [controller.tableView deselectRowAtIndexPath:[controller.tableView indexPathForCell:self] animated:YES];
+			} else {
+				[controller.navigationController pushViewController:optionsViewController animated:YES];
+			}
         }
-        else if (self.rowDescriptor.action.formSegueClass){
-            UIViewController * controllerToPresent = [self controllerToPresent];
-            NSAssert(controllerToPresent, @"either rowDescriptor.action.viewControllerClass or rowDescriptor.action.viewControllerStoryboardId or rowDescriptor.action.viewControllerNibName must be assigned");
-            NSAssert([controllerToPresent conformsToProtocol:@protocol(XLFormRowDescriptorViewController)], @"selector view controller must conform to XLFormRowDescriptorViewController protocol");
-            UIStoryboardSegue * segue = [[self.rowDescriptor.action.formSegueClass alloc] initWithIdentifier:self.rowDescriptor.tag source:controller destination:controllerToPresent];
-            [controller prepareForSegue:segue sender:self.rowDescriptor];
-            [segue perform];
-        }
-        else if ((controllerToPresent = [self controllerToPresent])){
-            NSAssert([controllerToPresent conformsToProtocol:@protocol(XLFormRowDescriptorViewController)], @"rowDescriptor.action.viewControllerClass must conform to XLFormRowDescriptorViewController protocol");
-            UIViewController<XLFormRowDescriptorViewController> *selectorViewController = (UIViewController<XLFormRowDescriptorViewController> *)controllerToPresent;
+        else{
+            Class selectorClass = self.rowDescriptor.selectorControllerClass;
+            UIViewController<XLFormRowDescriptorViewController> *selectorViewController = [[selectorClass alloc] init];
             selectorViewController.rowDescriptor = self.rowDescriptor;
             selectorViewController.title = self.rowDescriptor.selectorTitle;
             
@@ -196,31 +192,11 @@
                 [controller.navigationController pushViewController:selectorViewController animated:YES];
             }
         }
-        else if (self.rowDescriptor.selectorOptions){
-            XLFormOptionsViewController * optionsViewController = [[XLFormOptionsViewController alloc] initWithStyle:UITableViewStyleGrouped titleHeaderSection:nil titleFooterSection:nil];
-            optionsViewController.rowDescriptor = self.rowDescriptor;
-            optionsViewController.title = self.rowDescriptor.selectorTitle;
-			
-			if ([self.rowDescriptor.rowType isEqualToString:XLFormRowDescriptorTypeSelectorPopover]) {
-				self.popoverController = [[UIPopoverController alloc] initWithContentViewController:optionsViewController];
-                self.popoverController.delegate = self;
-                optionsViewController.popoverController = self.popoverController;
-                if (self.detailTextLabel.window){
-                    [self.popoverController presentPopoverFromRect:CGRectMake(0, 0, self.detailTextLabel.frame.size.width, self.detailTextLabel.frame.size.height) inView:self.detailTextLabel permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
-                }
-                else{
-                    [self.popoverController presentPopoverFromRect:CGRectMake(0, 0, self.frame.size.width, self.frame.size.height) inView:self permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
-                }
-                [controller.tableView deselectRowAtIndexPath:[controller.tableView indexPathForCell:self] animated:YES];
-			} else {
-				[controller.navigationController pushViewController:optionsViewController animated:YES];
-			}
-        }
     }
     else if ([self.rowDescriptor.rowType isEqualToString:XLFormRowDescriptorTypeMultipleSelector] || [self.rowDescriptor.rowType isEqualToString:XLFormRowDescriptorTypeMultipleSelectorPopover])
     {
         NSAssert(self.rowDescriptor.selectorOptions, @"selectorOptions property shopuld not be nil");
-        XLFormOptionsViewController * optionsViewController = [[XLFormOptionsViewController alloc] initWithStyle:UITableViewStyleGrouped titleHeaderSection:nil titleFooterSection:nil];
+        XLFormOptionsViewController * optionsViewController = [[XLFormOptionsViewController alloc] initWithOptions:self.rowDescriptor.selectorOptions style:UITableViewStyleGrouped titleHeaderSection:nil titleFooterSection:nil];
         optionsViewController.rowDescriptor = self.rowDescriptor;
         optionsViewController.title = self.rowDescriptor.selectorTitle;
         
@@ -260,21 +236,19 @@
         [controller.tableView deselectRowAtIndexPath:[controller.form indexPathOfFormRow:self.rowDescriptor] animated:YES];
     }
     else if ([self.rowDescriptor.rowType isEqualToString:XLFormRowDescriptorTypeSelectorPickerView]){
+        [self becomeFirstResponder];
         [controller.tableView selectRowAtIndexPath:nil animated:YES scrollPosition:UITableViewScrollPositionNone];
     }
 }
 
--(void)highlight
-{
-    [super highlight];
-    _beforeChangeColor = self.detailTextLabel.textColor;
-    self.detailTextLabel.textColor = self.formViewController.view.tintColor;
-}
 
--(void)unhighlight
+-(NSError *)formDescriptorCellLocalValidation
 {
-    [super unhighlight];
-    self.detailTextLabel.textColor = _beforeChangeColor;
+    if (self.rowDescriptor.required && self.rowDescriptor.value == nil){
+        return [[NSError alloc] initWithDomain:XLFormErrorDomain code:XLFormErrorCodeRequired userInfo:@{ NSLocalizedDescriptionKey: [NSString stringWithFormat:NSLocalizedString(@"%@ can't be empty", nil), self.rowDescriptor.title] }];
+        
+    }
+    return nil;
 }
 
 #pragma mark - UIActionSheetDelegate
@@ -343,7 +317,7 @@
 }
 
 
-#pragma mark - Helpers
+#pragma mark - helpers
 
 -(NSInteger)selectedIndex
 {
@@ -355,35 +329,6 @@
         }
     }
     return -1;
-}
-
--(UIViewController *)controllerToPresent
-{
-    if (self.rowDescriptor.action.viewControllerClass){
-        return [[self.rowDescriptor.action.viewControllerClass alloc] init];
-    }
-    else if ([self.rowDescriptor.action.viewControllerStoryboardId length] != 0){
-        UIStoryboard * storyboard =  [self storyboardToPresent];
-        NSAssert(storyboard != nil, @"You must provide a storyboard when rowDescriptor.action.viewControllerStoryboardId is used");
-        return [storyboard instantiateViewControllerWithIdentifier:self.rowDescriptor.action.viewControllerStoryboardId];
-    }
-    else if ([self.rowDescriptor.action.viewControllerNibName length] != 0){
-        Class viewControllerClass = NSClassFromString(self.rowDescriptor.action.viewControllerNibName);
-        NSAssert(viewControllerClass, @"class owner of self.rowDescriptor.action.viewControllerNibName must be equal to %@", self.rowDescriptor.action.viewControllerNibName);
-        return [[viewControllerClass alloc] initWithNibName:self.rowDescriptor.action.viewControllerNibName bundle:nil];
-    }
-    return nil;
-}
-
--(UIStoryboard *)storyboardToPresent
-{
-    if ([self.formViewController respondsToSelector:@selector(storyboardForRow:)]){
-        return [self.formViewController storyboardForRow:self.rowDescriptor];
-    }
-    if (self.formViewController.storyboard){
-        return self.formViewController.storyboard;
-    }
-    return nil;
 }
 
 

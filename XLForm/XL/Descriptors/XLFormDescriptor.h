@@ -37,14 +37,6 @@ typedef NS_ENUM(NSInteger, XLFormErrorCode)
     XLFormErrorCodeRequired = -1000
 };
 
-typedef NS_OPTIONS(NSUInteger, XLFormRowNavigationOptions) {
-    XLFormRowNavigationOptionNone                               = 0,
-    XLFormRowNavigationOptionEnabled                            = 1 << 0,
-    XLFormRowNavigationOptionStopDisableRow                     = 1 << 1,
-    XLFormRowNavigationOptionSkipCanNotBecomeFirstResponderRow  = 1 << 2,
-    XLFormRowNavigationOptionStopInlineRow                      = 1 << 3,
-};
-
 @class XLFormSectionDescriptor;
 
 @interface XLFormDescriptor : NSObject
@@ -53,19 +45,16 @@ typedef NS_OPTIONS(NSUInteger, XLFormRowNavigationOptions) {
 @property (readonly) NSString * title;
 @property (nonatomic) BOOL assignFirstResponderOnShow;
 @property (nonatomic) BOOL addAsteriskToRequiredRowsTitle;
-@property (nonatomic) XLFormRowNavigationOptions rowNavigationOptions;
 
 @property (weak) id<XLFormDescriptorDelegate> delegate;
 
 -(id)initWithTitle:(NSString *)title;
-+(id)formDescriptor;
-+(id)formDescriptorWithTitle:(NSString *)title;
++(XLFormDescriptor *)formDescriptor;
++(XLFormDescriptor *)formDescriptorWithTitle:(NSString *)title;
 
 -(void)addFormSection:(XLFormSectionDescriptor *)formSection;
 -(void)addFormSection:(XLFormSectionDescriptor *)formSection atIndex:(NSUInteger)index;
 -(void)addFormSection:(XLFormSectionDescriptor *)formSection afterSection:(XLFormSectionDescriptor *)afterSection;
--(void)addFormRow:(XLFormRowDescriptor *)formRow beforeRow:(XLFormRowDescriptor *)afterRow;
--(void)addFormRow:(XLFormRowDescriptor *)formRow beforeRowTag:(NSString *)afterRowTag;
 -(void)addFormRow:(XLFormRowDescriptor *)formRow afterRow:(XLFormRowDescriptor *)afterRow;
 -(void)addFormRow:(XLFormRowDescriptor *)formRow afterRowTag:(NSString *)afterRowTag;
 -(void)removeFormSectionAtIndex:(NSUInteger)index;
@@ -87,8 +76,5 @@ typedef NS_OPTIONS(NSUInteger, XLFormRowNavigationOptions) {
 
 -(NSArray *)localValidationErrors:(XLFormViewController *)formViewController;
 - (void)setFirstResponder:(XLFormViewController *)formViewController;
-
--(XLFormRowDescriptor *)nextRowDescriptorForRow:(XLFormRowDescriptor *)currentRow;
--(XLFormRowDescriptor *)previousRowDescriptorForRow:(XLFormRowDescriptor *)currentRow;
 
 @end

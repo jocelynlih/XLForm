@@ -23,12 +23,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#import "XLForm.h"
 #import "XLFormBaseCell.h"
 
 #import <UIKit/UIKit.h>
 
-@interface XLFormDatePickerCell : XLFormBaseCell<XLFormInlineRowDescriptorCell>
+@interface XLFormDatePickerCell : XLFormBaseCell
 
 @property (nonatomic, readonly) UIDatePicker * datePicker;
 

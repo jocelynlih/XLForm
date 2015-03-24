@@ -48,27 +48,34 @@ typedef NS_ENUM(NSUInteger, XLFormPresentationMode) {
 @property NSString *title;
 @property (nonatomic) id value;
 @property Class valueTransformer;
-@property UITableViewCellStyle cellStyle;
+@property UITableViewCellStyle cellStype;
 
 @property (nonatomic) NSMutableDictionary *cellConfig;
 @property (nonatomic) NSMutableDictionary *cellConfigAtConfigure;
 @property BOOL disabled;
 @property BOOL required;
 
-@property XLFormAction * action;
+@property (readonly) XLFormAction * action;
 
 @property (weak) XLFormSectionDescriptor * sectionDescriptor;
 
 -(id)initWithTag:(NSString *)tag rowType:(NSString *)rowType title:(NSString *)title;
-+(id)formRowDescriptorWithTag:(NSString *)tag rowType:(NSString *)rowType;
-+(id)formRowDescriptorWithTag:(NSString *)tag rowType:(NSString *)rowType title:(NSString *)title;
++(XLFormRowDescriptor *)formRowDescriptorWithTag:(NSString *)tag rowType:(NSString *)rowType;
++(XLFormRowDescriptor *)formRowDescriptorWithTag:(NSString *)tag rowType:(NSString *)rowType title:(NSString *)title;
 
 -(UITableViewCell<XLFormDescriptorCell> *)cellForFormController:(XLFormViewController *)formController;
 
 @property NSString *requireMsg;
--(void)addValidator:(id<XLFormValidatorProtocol>)validator;
--(void)removeValidator:(id<XLFormValidatorProtocol>)validator;
--(XLFormValidationStatus *)doValidation;
+-(void) addValidator: (id<XLFormValidatorProtocol>) validator;
+-(void) removeValidator: (id<XLFormValidatorProtocol>) validator;
+-(XLFormValidationStatus *) doValidation;
+
+// ================================
+// properties for Button
+// =================================
+@property Class buttonViewController;
+@property XLFormPresentationMode buttonViewControllerPresentationMode;
+
 
 // ===========================
 // property used for Selectors
@@ -77,16 +84,12 @@ typedef NS_ENUM(NSUInteger, XLFormPresentationMode) {
 @property NSString * selectorTitle;
 @property NSArray * selectorOptions;
 
+// =====================================
+// properties used for dynamic selectors
+// =====================================
+@property Class selectorControllerClass;
+
 @property id leftRightSelectorLeftOptionSelected;
-
-
-// =====================================
-// Deprecated
-// =====================================
-@property Class buttonViewController DEPRECATED_ATTRIBUTE DEPRECATED_MSG_ATTRIBUTE("Use action.viewControllerClass instead");
-@property XLFormPresentationMode buttonViewControllerPresentationMode DEPRECATED_ATTRIBUTE DEPRECATED_MSG_ATTRIBUTE("use action.viewControllerPresentationMode instead");
-@property Class selectorControllerClass DEPRECATED_ATTRIBUTE DEPRECATED_MSG_ATTRIBUTE("Use action.viewControllerClass instead");
-
 
 @end
 
@@ -122,18 +125,11 @@ typedef NS_ENUM(NSUInteger, XLFormPresentationMode) {
 
 @end
 
+
 @interface XLFormAction : NSObject
-
-@property (nonatomic, strong) Class viewControllerClass;
-@property (nonatomic, strong) NSString * viewControllerStoryboardId;
-@property (nonatomic, strong) NSString * viewControllerNibName;
-
-@property (nonatomic) XLFormPresentationMode viewControllerPresentationMode;
 
 @property (nonatomic, strong) void (^formBlock)(XLFormRowDescriptor * sender);
 @property (nonatomic) SEL formSelector;
-@property (nonatomic, strong) NSString * formSegueIdenfifier;
-@property (nonatomic, strong) Class formSegueClass;
 
 @end
 

@@ -36,7 +36,7 @@
 
 @property NSString * titleHeaderSection;
 @property NSString * titleFooterSection;
-
+@property NSArray * options;
 
 @end
 
@@ -46,21 +46,18 @@
 @synthesize titleFooterSection = _titleFooterSection;
 @synthesize rowDescriptor = _rowDescriptor;
 @synthesize popoverController = __popoverController;
+@synthesize options = _options;
 
-- (id)initWithStyle:(UITableViewStyle)style
+- (id)initWithOptions:(NSArray *)options style:(UITableViewStyle)style
 {
-    self = [super initWithStyle:style];
-    if (self){
-        _titleFooterSection = nil;
-        _titleHeaderSection = nil;
-    }
-    return self;
+    return [self initWithOptions:options style:style titleHeaderSection:nil titleFooterSection:nil];
 }
 
-- (id)initWithStyle:(UITableViewStyle)style titleHeaderSection:(NSString *)titleHeaderSection titleFooterSection:(NSString *)titleFooterSection
+- (id)initWithOptions:(NSArray *)options style:(UITableViewStyle)style titleHeaderSection:(NSString *)titleHeaderSection titleFooterSection:(NSString *)titleFooterSection
 {
-    self = [self initWithStyle:style];
-    if (self){
+    self = [super initWithStyle:style];
+    if (self) {
+        _options = options;
         _titleFooterSection = titleFooterSection;
         _titleHeaderSection = titleHeaderSection;
     }
@@ -79,13 +76,13 @@
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    return [[self selectorOptions] count];
+    return [self.options count];
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     XLFormRightDetailCell * cell = [tableView dequeueReusableCellWithIdentifier:CELL_REUSE_IDENTIFIER forIndexPath:indexPath];
-    id cellObject =  [[self selectorOptions] objectAtIndex:indexPath.row];
+    id cellObject =  [self.options objectAtIndex:indexPath.row];
     cell.textLabel.text = [self valueDisplayTextForOption:cellObject];
     if ([self.rowDescriptor.rowType isEqualToString:XLFormRowDescriptorTypeMultipleSelector] || [self.rowDescriptor.rowType isEqualToString:XLFormRowDescriptorTypeMultipleSelectorPopover]){
         cell.accessoryType = ([self selectedValuesContainsOption:cellObject] ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone);
@@ -118,7 +115,7 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
-    id cellObject =  [[self selectorOptions] objectAtIndex:indexPath.row];
+    id cellObject =  [self.options objectAtIndex:indexPath.row];
     if ([self.rowDescriptor.rowType isEqualToString:XLFormRowDescriptorTypeMultipleSelector] || [self.rowDescriptor.rowType isEqualToString:XLFormRowDescriptorTypeMultipleSelectorPopover]){
         if ([self selectedValuesContainsOption:cellObject]){
             self.rowDescriptor.value = [self selectedValuesRemoveOption:cellObject];
@@ -138,7 +135,7 @@
         }
         else{
             if (self.rowDescriptor.value){
-                NSInteger index = [[self selectorOptions] formIndexForItem:self.rowDescriptor.value];
+                NSInteger index = [self.options formIndexForItem:self.rowDescriptor.value];
                 if (index != NSNotFound){
                     NSIndexPath * oldSelectedIndexPath = [NSIndexPath indexPathForRow:index inSection:0];
                     UITableViewCell *oldSelectedCell = [tableView cellForRowAtIndexPath:oldSelectedIndexPath];
@@ -208,27 +205,6 @@
         }
     }
     return [option displayText];
-}
-
-#pragma mark - Helpers
-
--(NSArray *)selectorOptions
-{
-    if (self.rowDescriptor.rowType == XLFormRowDescriptorTypeSelectorLeftRight){
-        XLFormLeftRightSelectorOption * option = [self leftOptionForOption:self.rowDescriptor.leftRightSelectorLeftOptionSelected];
-        return option.rightOptions;
-    }
-    else{
-        return self.rowDescriptor.selectorOptions;
-    }
-}
-
--(XLFormLeftRightSelectorOption *)leftOptionForOption:(id)option
-{
-    return [[self.rowDescriptor.selectorOptions filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id evaluatedObject, NSDictionary * __unused bindings) {
-        XLFormLeftRightSelectorOption * evaluatedLeftOption = (XLFormLeftRightSelectorOption *)evaluatedObject;
-        return [evaluatedLeftOption.leftValue isEqual:option];
-    }]] firstObject];
 }
 
 

@@ -40,14 +40,10 @@
 @optional
 
 +(CGFloat)formDescriptorCellHeightForRowDescriptor:(XLFormRowDescriptor *)rowDescriptor;
--(BOOL)formDescriptorCellCanBecomeFirstResponder;
 -(BOOL)formDescriptorCellBecomeFirstResponder;
+-(BOOL)formDescriptorCellResignFirstResponder;
 -(void)formDescriptorCellDidSelectedWithFormController:(XLFormViewController *)controller;
 -(NSString *)formDescriptorHttpParameterName;
-
-
--(void)highlight;
--(void)unhighlight;
 
 
 @end

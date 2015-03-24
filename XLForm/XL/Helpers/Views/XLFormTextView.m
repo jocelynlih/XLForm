@@ -36,10 +36,9 @@
 - (id)initWithFrame:(CGRect)frame
 {
     if((self = [super initWithFrame:frame])){
-        self.scrollsToTop = NO;
         self.contentInset = UIEdgeInsetsMake(0, -4, 0, 0);
         [self setPlaceholder:@""];
-        [self setPlaceholderColor:[UIColor colorWithRed:.78 green:.78 blue:.80 alpha:1.0]];
+        [self setPlaceholderColor:[UIColor lightGrayColor]];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(textChanged:) name:UITextViewTextDidChangeNotification object:nil];
     }
     return self;
@@ -70,6 +69,7 @@
             _placeHolderLabel = [[UILabel alloc] initWithFrame:CGRectMake(4,8,self.bounds.size.width - 16,0)];
             _placeHolderLabel.lineBreakMode = NSLineBreakByWordWrapping;
             _placeHolderLabel.numberOfLines = 0;
+            _placeHolderLabel.font = self.font;
             _placeHolderLabel.backgroundColor = [UIColor clearColor];
             _placeHolderLabel.textColor = self.placeholderColor;
             _placeHolderLabel.alpha = 0;
@@ -77,7 +77,7 @@
             [self addSubview:_placeHolderLabel];
         }
         _placeHolderLabel.text = self.placeholder;
-        _placeHolderLabel.font = self.font;
+        _placeHolderLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
         [_placeHolderLabel sizeToFit];
         [self sendSubviewToBack:_placeHolderLabel];
     }

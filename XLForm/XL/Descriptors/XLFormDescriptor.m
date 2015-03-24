@@ -51,18 +51,17 @@ NSString * const XLValidationStatusErrorKey = @"XLValidationStatusErrorKey";
         _formSections = [NSMutableArray array];
         _title = title;
         _addAsteriskToRequiredRowsTitle = NO;
-        _rowNavigationOptions = XLFormRowNavigationOptionEnabled;
         [self addObserver:self forKeyPath:@"formSections" options:(NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld) context:0];
     }
     return self;
 }
 
-+(id)formDescriptor
++(XLFormDescriptor *)formDescriptor
 {
     return [self formDescriptorWithTitle:nil];
 }
 
-+(id)formDescriptorWithTitle:(NSString *)title
++(XLFormDescriptor *)formDescriptorWithTitle:(NSString *)title
 {
     return [[XLFormDescriptor alloc] initWithTitle:title];
 }
@@ -86,26 +85,6 @@ NSString * const XLValidationStatusErrorKey = @"XLValidationStatusErrorKey";
         [self insertObject:formSection inFormSectionsAtIndex:[self.formSections indexOfObject:afterSection]+1];
     }
 }
-
-
--(void)addFormRow:(XLFormRowDescriptor *)formRow beforeRow:(XLFormRowDescriptor *)beforeRow
-{
-    NSIndexPath * beforeIndexPath = [self indexPathOfFormRow:beforeRow];
-    if (self.formSections.count > beforeIndexPath.section){
-        [[self.formSections objectAtIndex:beforeIndexPath.section] addFormRow:formRow beforeRow:beforeRow];
-    }
-    else{
-        [[self.formSections lastObject] addFormRow:formRow beforeRow:beforeRow];
-    }
-}
-
--(void)addFormRow:(XLFormRowDescriptor *)formRow beforeRowTag:(NSString *)beforeRowTag
-{
-    XLFormRowDescriptor * beforeRowForm = [self formRowWithTag:beforeRowTag];
-    [self addFormRow:formRow beforeRow:beforeRowForm];
-}
-
-
 
 -(void)addFormRow:(XLFormRowDescriptor *)formRow afterRow:(XLFormRowDescriptor *)afterRow
 {
@@ -294,7 +273,7 @@ NSString * const XLValidationStatusErrorKey = @"XLValidationStatusErrorKey";
     for (XLFormSectionDescriptor * formSection in self.formSections) {
         for (XLFormRowDescriptor * row in formSection.formRows) {
             UITableViewCell<XLFormDescriptorCell> * cell = [row cellForFormController:formViewController];
-            if ([cell formDescriptorCellCanBecomeFirstResponder]){
+            if ([cell respondsToSelector:@selector(formDescriptorCellBecomeFirstResponder)]){
                 if ([cell formDescriptorCellBecomeFirstResponder]){
                     return;
                 }
@@ -390,52 +369,5 @@ NSString * const XLValidationStatusErrorKey = @"XLValidationStatusErrorKey";
     return _formSections;
 }
 
-#pragma mark - Helpers
-
--(XLFormRowDescriptor *)nextRowDescriptorForRow:(XLFormRowDescriptor *)row
-{
-    NSUInteger indexOfRow = [row.sectionDescriptor.formRows indexOfObject:row];
-    if (indexOfRow != NSNotFound){
-        if ([row.sectionDescriptor.formRows indexOfObject:row] + 1 < row.sectionDescriptor.formRows.count){
-            return [row.sectionDescriptor.formRows objectAtIndex:++indexOfRow];
-        }
-        else{
-            NSUInteger sectionIndex = [self.formSections indexOfObject:row.sectionDescriptor];
-            NSUInteger numberOfSections = [self.formSections count];
-            if (sectionIndex != NSNotFound && sectionIndex < numberOfSections - 1){
-                sectionIndex++;
-                XLFormSectionDescriptor * sectionDescriptor;
-                while ([[(sectionDescriptor = [row.sectionDescriptor.formDescriptor.formSections objectAtIndex:sectionIndex]) formRows] count] == 0 && sectionIndex < numberOfSections - 1){
-                    sectionIndex++;
-                }
-                return [sectionDescriptor.formRows firstObject];
-            }
-        }
-    }
-    return nil;
-}
-
-
--(XLFormRowDescriptor *)previousRowDescriptorForRow:(XLFormRowDescriptor *)row
-{
-    NSUInteger indexOfRow = [row.sectionDescriptor.formRows indexOfObject:row];
-    if (indexOfRow != NSNotFound){
-        if ([row.sectionDescriptor.formRows indexOfObject:row] > 0 ){
-            return [row.sectionDescriptor.formRows objectAtIndex:--indexOfRow];
-        }
-        else{
-            NSUInteger sectionIndex = [self.formSections indexOfObject:row.sectionDescriptor];
-            if (sectionIndex != NSNotFound && sectionIndex > 0){
-                sectionIndex--;
-                XLFormSectionDescriptor * sectionDescriptor;
-                while ([[(sectionDescriptor = [row.sectionDescriptor.formDescriptor.formSections objectAtIndex:sectionIndex]) formRows] count] == 0 && sectionIndex > 0 ){
-                    sectionIndex--;
-                }
-                return [sectionDescriptor.formRows lastObject];
-            }
-        }
-    }
-    return nil;
-}
 
 @end

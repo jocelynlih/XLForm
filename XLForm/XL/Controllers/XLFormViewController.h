@@ -28,18 +28,12 @@
 #import "XLFormDescriptor.h"
 #import "XLFormSectionDescriptor.h"
 #import "XLFormDescriptorDelegate.h"
-#import "XLFormRowNavigationAccessoryView.h"
 
 
 @class XLFormViewController;
 @class XLFormRowDescriptor;
 @class XLFormSectionDescriptor;
 @class XLFormDescriptor;
-
-typedef NS_ENUM(NSUInteger, XLFormRowNavigationDirection) {
-    XLFormRowNavigationDirectionPrevious = 0,
-    XLFormRowNavigationDirectionNext
-};
 
 @protocol XLFormViewControllerDelegate <NSObject>
 
@@ -53,7 +47,6 @@ typedef NS_ENUM(NSUInteger, XLFormRowNavigationDirection) {
 -(NSDictionary *)httpParameters;
 
 -(XLFormRowDescriptor *)formRowFormMultivaluedFormSection:(XLFormSectionDescriptor *)formSection;
--(UIStoryboard *)storyboardForRow:(XLFormRowDescriptor *)formRow;
 
 -(NSArray *)formValidationErrors;
 -(void)showFormValidationError:(NSError *)error;
@@ -62,14 +55,6 @@ typedef NS_ENUM(NSUInteger, XLFormRowNavigationDirection) {
 -(UITableViewRowAnimation)deleteRowAnimationForRow:(XLFormRowDescriptor *)formRow;
 -(UITableViewRowAnimation)insertRowAnimationForSection:(XLFormSectionDescriptor *)formSection;
 -(UITableViewRowAnimation)deleteRowAnimationForSection:(XLFormSectionDescriptor *)formSection;
-
-// InputAccessoryView
--(UIView *)inputAccessoryViewForRowDescriptor:(XLFormRowDescriptor *)rowDescriptor;
--(XLFormRowDescriptor *)nextRowDescriptorForRow:(XLFormRowDescriptor*)currentRow withDirection:(XLFormRowNavigationDirection)direction;
-
-// highlight/unhighlight
--(void)beginEditing:(XLFormRowDescriptor *)rowDescriptor;
--(void)endEditing:(XLFormRowDescriptor *)rowDescriptor;
 
 @end
 
